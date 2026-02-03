@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const Navbar = ({ onNavigate }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(false);
   const [currentView, setCurrentView] = useState('home');
+  const [isMobile, setIsMobile] = useState(false);
 
   const navLinks = [
     { name: 'Home', href: '#home', type: 'home' },
@@ -18,12 +19,19 @@ const Navbar = ({ onNavigate }) => {
 
   const logoUrl = "https://github.com/BOBWANDATI/images/blob/main/Black%20and%20White%20Initial%20A%20Tech%20Business%20Logo%20.png?raw=true";
 
+  // Check if mobile on mount and resize
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
     
-    // Check current view based on URL
     const hash = window.location.hash.substring(1);
     if (hash === 'web-design') {
       setCurrentView('web-design');
@@ -32,14 +40,16 @@ const Navbar = ({ onNavigate }) => {
     }
     
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
-  const handleNavClick = (href, type = 'section') => {
+  const handleNavClick = useCallback((href, type = 'section') => {
     setIsMobileMenuOpen(false);
     
     if (type === 'page' && href === '#web-design') {
-      // Navigate to Web Design page
       if (onNavigate) {
         onNavigate('web-design');
       } else {
@@ -48,7 +58,6 @@ const Navbar = ({ onNavigate }) => {
       }
       setCurrentView('web-design');
     } else if (type === 'home') {
-      // Navigate to home page
       if (onNavigate) {
         onNavigate('home');
       } else {
@@ -57,16 +66,13 @@ const Navbar = ({ onNavigate }) => {
       }
       setCurrentView('home');
     } else if (type === 'section') {
-      // Scroll to section on home page
       if (currentView === 'web-design') {
-        // If we're on web design page, go to home page first
         if (onNavigate) {
           onNavigate('home', href.substring(1));
         } else {
           window.location.hash = href;
         }
       } else {
-        // We're already on home page, just scroll
         const element = document.querySelector(href);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth' });
@@ -74,7 +80,7 @@ const Navbar = ({ onNavigate }) => {
       }
       setCurrentView('home');
     }
-  };
+  }, [currentView, onNavigate]);
 
   const handleLogoClick = (e) => {
     e.preventDefault();
@@ -87,6 +93,7 @@ const Navbar = ({ onNavigate }) => {
     window.open(whatsappUrl, '_blank');
   };
 
+  // Responsive styles
   const styles = {
     navbar: {
       position: 'fixed',
@@ -122,6 +129,7 @@ const Navbar = ({ onNavigate }) => {
       padding: '8px 0',
       transition: 'transform 0.3s ease',
       cursor: 'pointer',
+      flexShrink: 0,
     },
     logoIcon: {
       width: '55px',
@@ -136,6 +144,7 @@ const Navbar = ({ onNavigate }) => {
       transition: 'all 0.3s ease',
       border: '1px solid rgba(0, 0, 0, 0.08)',
       position: 'relative',
+      flexShrink: 0,
     },
     logoImageContainer: {
       width: '100%',
@@ -182,10 +191,11 @@ const Navbar = ({ onNavigate }) => {
       display: 'flex',
       flexDirection: 'column',
       lineHeight: 1.1,
+      minWidth: 0,
     },
     logoText: {
       fontWeight: 800,
-      fontSize: '1.5rem',
+      fontSize: 'clamp(1.2rem, 4vw, 1.5rem)',
       color: '#5207b4ff',
       letterSpacing: '-0.5px',
       background: 'linear-gradient(135deg, #000000, #333333)',
@@ -193,36 +203,39 @@ const Navbar = ({ onNavigate }) => {
       WebkitTextFillColor: 'transparent',
       backgroundClip: 'text',
       fontFamily: "cyrillic bodoni condesed",
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     },
     logoSubtext: {
       color: '#0e12f1ff',
       fontWeight: 500,
-      fontSize: '0.88rem',
+      fontSize: 'clamp(0.7rem, 2.5vw, 0.88rem)',
       display: 'block',
       marginTop: '3px',
       marginLeft: '23px',
       letterSpacing: '1.5px',
       textTransform: 'uppercase',
       fontFamily: "slopes",
+      whiteSpace: 'nowrap',
     },
-    links: {
+    // Desktop Navigation
+    desktopNav: {
       display: 'flex',
       alignItems: 'center',
-      gap: '2.5rem',
-      '@media (max-width: 768px)': {
-        display: 'none',
-      },
+      gap: 'clamp(1rem, 2vw, 2.5rem)',
     },
     link: {
       color: '#0b25b6ff',
       textDecoration: 'none',
       fontWeight: 600,
-      fontSize: '0.95rem',
+      fontSize: 'clamp(0.85rem, 1.5vw, 0.95rem)',
       transition: 'all 0.3s ease',
       position: 'relative',
       padding: '8px 0',
       fontFamily: "cyrillic bodoni condesed",
       cursor: 'pointer',
+      whiteSpace: 'nowrap',
     },
     linkActive: {
       color: '#e9d208ff',
@@ -239,10 +252,10 @@ const Navbar = ({ onNavigate }) => {
     cta: {
       background: '#f5ca0bff',
       color: 'white',
-      padding: '12px 28px',
+      padding: 'clamp(10px, 2vw, 12px) clamp(20px, 3vw, 28px)',
       borderRadius: '8px',
       fontWeight: 600,
-      fontSize: '0.95rem',
+      fontSize: 'clamp(0.85rem, 1.5vw, 0.95rem)',
       border: 'none',
       cursor: 'pointer',
       transition: 'all 0.3s ease',
@@ -252,7 +265,9 @@ const Navbar = ({ onNavigate }) => {
       gap: '8px',
       letterSpacing: '0.5px',
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      whiteSpace: 'nowrap',
     },
+    // Mobile Menu Button
     mobileMenuBtn: {
       display: 'none',
       background: 'none',
@@ -263,9 +278,7 @@ const Navbar = ({ onNavigate }) => {
       alignItems: 'center',
       justifyContent: 'center',
       gap: '5px',
-      '@media (max-width: 768px)': {
-        display: 'flex',
-      },
+      zIndex: 1001,
     },
     mobileMenuBtnSpan: {
       display: 'block',
@@ -275,64 +288,120 @@ const Navbar = ({ onNavigate }) => {
       borderRadius: '2px',
       transition: 'all 0.3s ease',
     },
+    // Mobile Menu
+    mobileMenuOverlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0, 0, 0, 0.5)',
+      zIndex: 999,
+      opacity: isMobileMenuOpen ? 1 : 0,
+      visibility: isMobileMenuOpen ? 'visible' : 'hidden',
+      transition: 'all 0.3s ease',
+    },
     mobileMenu: {
-      display: 'none',
-      flexDirection: 'column',
-      gap: '0',
-      background: 'white',
-      position: 'absolute',
+      position: 'fixed',
       top: '80px',
-      left: '5%',
-      right: '5%',
-      borderRadius: '12px',
-      boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)',
-      overflow: 'hidden',
-      border: '1px solid rgba(0, 0, 0, 0.05)',
-      '@media (max-width: 768px)': {
-        ...(isMobileMenuOpen && {
-          display: 'flex',
-        }),
-      },
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'white',
+      zIndex: 1000,
+      display: 'flex',
+      flexDirection: 'column',
+      overflowY: 'auto',
+      transform: isMobileMenuOpen ? 'translateX(0)' : 'translateX(100%)',
+      transition: 'transform 0.3s ease',
+      paddingBottom: '80px',
     },
     mobileLink: {
       color: '#475569',
       textDecoration: 'none',
       fontWeight: 600,
-      fontSize: '1rem',
-      padding: '18px 24px',
-      transition: 'all 0.3s ease',
+      fontSize: '1.1rem',
+      padding: '20px 24px',
+      transition: 'all 0.2s ease',
       borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif',
       cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
     },
-    mobileLinkHover: {
-      background: 'rgba(0, 0, 0, 0.03)',
-      color: '#000000',
-      paddingLeft: '30px',
+    mobileLinkIcon: {
+      width: '20px',
+      height: '20px',
+      opacity: 0.7,
     },
     mobileCta: {
       background: '#000000',
       color: 'white',
-      padding: '18px 24px',
+      padding: '20px 24px',
       fontWeight: 600,
-      fontSize: '1rem',
+      fontSize: '1.1rem',
       border: 'none',
       cursor: 'pointer',
       transition: 'all 0.3s ease',
       textAlign: 'center',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif',
+      marginTop: 'auto',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '12px',
+      borderTop: '1px solid rgba(0, 0, 0, 0.05)',
     },
   };
 
-  // Add CSS animation for loading
-  const loadingStyle = `
+  // Media query styles using CSS-in-JS with @media
+  const mediaStyles = `
     @keyframes loading {
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
+    
+    @media (max-width: 768px) {
+      .desktop-nav {
+        display: none !important;
+      }
+      
+      .mobile-menu-btn {
+        display: flex !important;
+      }
+      
+      .logo-text-container {
+        max-width: 150px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .logo-text-container {
+        max-width: 120px;
+      }
+      
+      .logo-icon {
+        width: 45px !important;
+        height: 45px !important;
+      }
+      
+      .logo {
+        gap: 10px !important;
+      }
+    }
+    
+    @media (max-width: 360px) {
+      .logo-text-container {
+        max-width: 100px;
+      }
+      
+      .logo-subtext {
+        margin-left: 15px !important;
+      }
+    }
   `;
 
-  // Check if link is active
   const isLinkActive = (link) => {
     if (link.type === 'page' && link.href === '#web-design') {
       return currentView === 'web-design';
@@ -340,10 +409,22 @@ const Navbar = ({ onNavigate }) => {
     return false;
   };
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (isMobileMenuOpen && !e.target.closest('.navbar-content')) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isMobileMenuOpen]);
+
   return (
     <>
-      <style>{loadingStyle}</style>
-      <nav style={styles.navbar}>
+      <style>{mediaStyles}</style>
+      <nav style={styles.navbar} className="navbar-content">
         <div style={styles.container}>
           <div
             style={styles.logo}
@@ -397,14 +478,15 @@ const Navbar = ({ onNavigate }) => {
                 )}
               </div>
             </div>
-            <div style={styles.logoTextContainer}>
+            <div style={styles.logoTextContainer} className="logo-text-container">
               <span style={styles.logoText}>Tana Digital</span>
-              <span style={styles.logoSubtext}>Agency</span>
+              <span style={styles.logoSubtext} className="logo-subtext">Agency</span>
             </div>
           </div>
 
-          <div style={styles.links}>
-            {navLinks.map((link) => (
+          {/* Desktop Navigation */}
+          <div style={styles.desktopNav} className="desktop-nav">
+            {navLinks.slice(0, isMobile ? 4 : navLinks.length).map((link) => (
               <a
                 key={link.name}
                 href={link.href}
@@ -461,8 +543,10 @@ const Navbar = ({ onNavigate }) => {
             </button>
           </div>
 
+          {/* Mobile Menu Button */}
           <button
             style={styles.mobileMenuBtn}
+            className="mobile-menu-btn"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -481,55 +565,92 @@ const Navbar = ({ onNavigate }) => {
           </button>
         </div>
 
+        {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
-          <div style={styles.mobileMenu}>
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                style={{
-                  ...styles.mobileLink,
-                  ...(isLinkActive(link) ? { color: '#000000', background: 'rgba(0, 0, 0, 0.05)' } : {}),
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = styles.mobileLinkHover.background;
-                  e.currentTarget.style.color = styles.mobileLinkHover.color;
-                  e.currentTarget.style.paddingLeft = styles.mobileLinkHover.paddingLeft;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = isLinkActive(link) ? 'rgba(0, 0, 0, 0.05)' : 'transparent';
-                  e.currentTarget.style.color = isLinkActive(link) ? '#000000' : styles.mobileLink.color;
-                  e.currentTarget.style.paddingLeft = styles.mobileLink.padding;
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick(link.href, link.type);
-                  setIsMobileMenuOpen(false);
-                }}
-              >
-                {link.name}
-              </a>
-            ))}
-            <button 
-              style={styles.mobileCta}
+          <div 
+            style={styles.mobileMenuOverlay}
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+
+        {/* Mobile Menu */}
+        <div style={styles.mobileMenu}>
+          {navLinks.map((link) => (
+            <a
+              key={link.name}
+              href={link.href}
+              style={{
+                ...styles.mobileLink,
+                ...(isLinkActive(link) ? { 
+                  color: '#000000', 
+                  background: 'rgba(0, 0, 0, 0.05)',
+                  fontWeight: 700 
+                } : {}),
+              }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#333333';
-                e.currentTarget.style.transform = 'scale(1.02)';
+                if (!isLinkActive(link)) {
+                  e.currentTarget.style.background = 'rgba(0, 0, 0, 0.03)';
+                  e.currentTarget.style.color = '#000000';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#000000';
-                e.currentTarget.style.transform = 'scale(1)';
+                if (!isLinkActive(link)) {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = styles.mobileLink.color;
+                }
               }}
-              onClick={() => {
-                handleWhatsappClick();
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavClick(link.href, link.type);
                 setIsMobileMenuOpen(false);
               }}
             >
-              Get Started Free
-            </button>
-          </div>
-        )}
+              {link.type === 'home' && (
+                <svg style={styles.mobileLinkIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+              )}
+              {link.type === 'page' && (
+                <svg style={styles.mobileLinkIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <line x1="9" y1="3" x2="9" y2="21" />
+                </svg>
+              )}
+              {link.type === 'section' && (
+                <svg style={styles.mobileLinkIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              )}
+              {link.name}
+            </a>
+          ))}
+          <button 
+            style={styles.mobileCta}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#333333';
+              e.currentTarget.style.transform = 'scale(1.02)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#000000';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+            onClick={() => {
+              handleWhatsappClick();
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+            </svg>
+            Get Started Free
+          </button>
+        </div>
       </nav>
+      
+      {/* Add spacing for fixed navbar */}
+      <div style={{ height: '80px' }} />
     </>
   );
 };
