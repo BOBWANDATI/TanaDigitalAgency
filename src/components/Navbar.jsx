@@ -1,794 +1,154 @@
-<<<<<<< HEAD
-import React, { useState, useEffect, useRef } from 'react';
-import './Navbar.css';
-=======
-import React, { useState, useEffect, useCallback } from 'react';
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
+import React, { useState, useEffect, useCallback } from "react";
+import "./Navbar.css";
 
-const Navbar = ({ onNavigate, currentView }) => {
+const Navbar = ({ onNavigate, currentView = "home" }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeLink, setActiveLink] = useState('home');
+  const [activeLink, setActiveLink] = useState("home");
   const [logoLoaded, setLogoLoaded] = useState(false);
-<<<<<<< HEAD
-  const mobileMenuRef = useRef(null);
-  const hamburgerBtnRef = useRef(null);
-=======
-  const [currentView, setCurrentView] = useState('home');
-  const [isMobile, setIsMobile] = useState(false);
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
 
   const navLinks = [
-    { name: 'Home', href: '#home', type: 'home', icon: '🏠' },
-    { name: 'Services', href: '#services', type: 'section', icon: '⚙️' },
-    { name: 'Courses', href: '#courses', type: 'section', icon: '📚' },
-    { name: 'Portfolio', href: '#portfolio', type: 'section', icon: '💼' },
-    { name: 'About Us', href: '#about', type: 'section', icon: '👥' },
-    { name: 'I want a Website', href: '#web-design', type: 'page', icon: '🎨' },
-    { name: 'Contact', href: '#contact', type: 'section', icon: '📞' },
+    { name: "Home", href: "#home", type: "home" },
+    { name: "Services", href: "#services", type: "section" },
+    { name: "Courses", href: "#courses", type: "section" },
+    { name: "Portfolio", href: "#portfolio", type: "section" },
+    { name: "About Us", href: "#about", type: "section" },
+    { name: "I want a Website", href: "#web-design", type: "page" },
+    { name: "Contact", href: "#contact", type: "section" },
   ];
 
-  const logoUrl = "https://github.com/BOBWANDATI/images/blob/main/ChatGPT%20Image%20Feb%2026,%202026,%2009_46_00%20AM.png?raw=true";
+  const logoUrl =
+    "https://github.com/BOBWANDATI/images/blob/main/ChatGPT%20Image%20Feb%2026,%202026,%2009_46_00%20AM.png?raw=true";
 
-  // Check if mobile on mount and resize
+  // Scroll effect
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
-      
-      if (currentView === 'home') {
-        const sections = navLinks
-          .filter(link => link.type === 'section')
-          .map(link => ({
-            id: link.href.substring(1),
-            element: document.getElementById(link.href.substring(1))
-          }))
-          .filter(section => section.element);
-        
-        let current = 'home';
-        const scrollPosition = window.scrollY + 100;
-        
-        sections.forEach(section => {
-          if (section.element) {
-            const { top, bottom } = section.element.getBoundingClientRect();
-            const elementTop = top + window.scrollY;
-            const elementBottom = bottom + window.scrollY;
-            
-            if (scrollPosition >= elementTop && scrollPosition < elementBottom) {
-              current = section.id;
-            }
-          }
-        });
-        
-        setActiveLink(current);
-      }
-    };
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
-    const hash = window.location.hash.substring(1);
-    if (hash === 'web-design') {
-      setActiveLink('web-design');
-    }
-
-    const handleClickOutside = (event) => {
-      if (
-        mobileMenuRef.current && 
-        !mobileMenuRef.current.contains(event.target) &&
-        hamburgerBtnRef.current &&
-        !hamburgerBtnRef.current.contains(event.target)
-      ) {
-        setIsMobileMenuOpen(false);
-      }
     };
 
-    const handleEscapeKey = (event) => {
-      if (event.key === 'Escape') {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscapeKey);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscapeKey);
-    };
-  }, [currentView, navLinks]);
-
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    
-<<<<<<< HEAD
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMobileMenuOpen]);
-=======
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', checkMobile);
-    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
 
-  const handleNavClick = useCallback((href, type = 'section') => {
-    setIsMobileMenuOpen(false);
-    const sectionId = href.substring(1);
-    
-    if (type === 'page' && href === '#web-design') {
-<<<<<<< HEAD
-      setActiveLink('web-design');
-=======
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
-      if (onNavigate) {
-        onNavigate('web-design');
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
+    return () => (document.body.style.overflow = "");
+  }, [isMobileMenuOpen]);
+
+  const handleNavClick = useCallback(
+    (href, type) => {
+      setIsMobileMenuOpen(false);
+      const sectionId = href.replace("#", "");
+
+      if (type === "page" && onNavigate) {
+        onNavigate("web-design");
+        setActiveLink("web-design");
+        return;
       }
-    } else if (type === 'home') {
-<<<<<<< HEAD
-      setActiveLink('home');
-=======
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
-      if (onNavigate) {
-        onNavigate('home');
-      } else {
-        window.location.hash = '';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (type === "home") {
+        setActiveLink("home");
+        if (onNavigate) onNavigate("home");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
       }
-    } else if (type === 'section') {
-<<<<<<< HEAD
-      setActiveLink(sectionId);
-      
-=======
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
-      if (currentView === 'web-design') {
-        if (onNavigate) {
-          onNavigate('home', sectionId);
-        }
-      } else {
-<<<<<<< HEAD
+
+      if (type === "section") {
+        setActiveLink(sectionId);
         const element = document.getElementById(sectionId);
-=======
-        const element = document.querySelector(href);
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          element.scrollIntoView({ behavior: "smooth" });
         }
       }
-    }
-  }, [currentView, onNavigate]);
-
-  const handleLogoClick = (e) => {
-    e.preventDefault();
-    handleNavClick('#home', 'home');
-  };
+    },
+    [onNavigate]
+  );
 
   const handleWhatsappClick = () => {
-    const message = "Hello Tana Digital Agency! I'm interested in your services.";
-    const whatsappUrl = `https://wa.me/254758284534?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-    setIsMobileMenuOpen(false);
+    const message =
+      "Hello Tana Digital Agency! I'm interested in your services.";
+    const whatsappUrl = `https://wa.me/254758284534?text=${encodeURIComponent(
+      message
+    )}`;
+    window.open(whatsappUrl, "_blank");
   };
 
-<<<<<<< HEAD
-=======
-  // Responsive styles
-  const styles = {
-    navbar: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 1000,
-      transition: 'all 0.3s ease',
-      padding: '0 5%',
-      background: 'rgba(255, 255, 255, 0.98)',
-      backdropFilter: 'blur(10px)',
-      borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
-      ...(isScrolled && {
-        background: 'rgba(255, 255, 255, 0.98)',
-        backdropFilter: 'blur(15px)',
-        boxShadow: '0 5px 25px rgba(0, 0, 0, 0.08)',
-      }),
-    },
-    container: {
-      maxWidth: '1200px',
-      margin: '0 auto',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      height: '80px',
-    },
-    logo: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '15px',
-      textDecoration: 'none',
-      color: 'inherit',
-      padding: '8px 0',
-      transition: 'transform 0.3s ease',
-      cursor: 'pointer',
-      flexShrink: 0,
-    },
-    logoIcon: {
-      width: '55px',
-      height: '55px',
-      background: '#ffffff',
-      borderRadius: '12px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-      transition: 'all 0.3s ease',
-      border: '1px solid rgba(0, 0, 0, 0.08)',
-      position: 'relative',
-      flexShrink: 0,
-    },
-    logoImageContainer: {
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '8px',
-      background: '#f1f1f1ff',
-    },
-    logoImage: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'contain',
-      filter: 'contrast(1.1) brightness(1.05)',
-      transition: 'all 0.3s ease',
-    },
-    logoLoading: {
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-      backgroundSize: '200% 100%',
-      animation: 'loading 1.5s infinite',
-      borderRadius: '10px',
-    },
-    logoFallback: {
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #000000, #1a1a1a)',
-      color: '#ffffff',
-      fontWeight: 'bold',
-      fontSize: '1.4rem',
-      borderRadius: '10px',
-      fontFamily: "'Segoe UI', Arial, sans-serif",
-      letterSpacing: '1px',
-    },
-    logoTextContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      lineHeight: 1.1,
-      minWidth: 0,
-    },
-    logoText: {
-      fontWeight: 800,
-      fontSize: 'clamp(1.2rem, 4vw, 1.5rem)',
-      color: '#5207b4ff',
-      letterSpacing: '-0.5px',
-      background: 'linear-gradient(135deg, #000000, #333333)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      backgroundClip: 'text',
-      fontFamily: "cyrillic bodoni condesed",
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-    },
-    logoSubtext: {
-      color: '#0e12f1ff',
-      fontWeight: 500,
-      fontSize: 'clamp(0.7rem, 2.5vw, 0.88rem)',
-      display: 'block',
-      marginTop: '3px',
-      marginLeft: '23px',
-      letterSpacing: '1.5px',
-      textTransform: 'uppercase',
-      fontFamily: "slopes",
-      whiteSpace: 'nowrap',
-    },
-    // Desktop Navigation
-    desktopNav: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: 'clamp(1rem, 2vw, 2.5rem)',
-    },
-    link: {
-      color: '#0b25b6ff',
-      textDecoration: 'none',
-      fontWeight: 600,
-      fontSize: 'clamp(0.85rem, 1.5vw, 0.95rem)',
-      transition: 'all 0.3s ease',
-      position: 'relative',
-      padding: '8px 0',
-      fontFamily: "cyrillic bodoni condesed",
-      cursor: 'pointer',
-      whiteSpace: 'nowrap',
-    },
-    linkActive: {
-      color: '#e9d208ff',
-    },
-    linkUnderline: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      width: '0%',
-      height: '2px',
-      background: 'linear-gradient(90deg, #000000, #333333)',
-      transition: 'width 0.3s ease',
-    },
-    cta: {
-      background: '#f5ca0bff',
-      color: 'white',
-      padding: 'clamp(10px, 2vw, 12px) clamp(20px, 3vw, 28px)',
-      borderRadius: '8px',
-      fontWeight: 600,
-      fontSize: 'clamp(0.85rem, 1.5vw, 0.95rem)',
-      border: 'none',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      letterSpacing: '0.5px',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      whiteSpace: 'nowrap',
-    },
-    // Mobile Menu Button
-    mobileMenuBtn: {
-      display: 'none',
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      padding: '10px',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '5px',
-      zIndex: 1001,
-    },
-    mobileMenuBtnSpan: {
-      display: 'block',
-      width: '26px',
-      height: '2.5px',
-      background: '#000000',
-      borderRadius: '2px',
-      transition: 'all 0.3s ease',
-    },
-    // Mobile Menu
-    mobileMenuOverlay: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.5)',
-      zIndex: 999,
-      opacity: isMobileMenuOpen ? 1 : 0,
-      visibility: isMobileMenuOpen ? 'visible' : 'hidden',
-      transition: 'all 0.3s ease',
-    },
-    mobileMenu: {
-      position: 'fixed',
-      top: '80px',
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'white',
-      zIndex: 1000,
-      display: 'flex',
-      flexDirection: 'column',
-      overflowY: 'auto',
-      transform: isMobileMenuOpen ? 'translateX(0)' : 'translateX(100%)',
-      transition: 'transform 0.3s ease',
-      paddingBottom: '80px',
-    },
-    mobileLink: {
-      color: '#475569',
-      textDecoration: 'none',
-      fontWeight: 600,
-      fontSize: '1.1rem',
-      padding: '20px 24px',
-      transition: 'all 0.2s ease',
-      borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-    },
-    mobileLinkIcon: {
-      width: '20px',
-      height: '20px',
-      opacity: 0.7,
-    },
-    mobileCta: {
-      background: '#000000',
-      color: 'white',
-      padding: '20px 24px',
-      fontWeight: 600,
-      fontSize: '1.1rem',
-      border: 'none',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      textAlign: 'center',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif',
-      marginTop: 'auto',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '12px',
-      borderTop: '1px solid rgba(0, 0, 0, 0.05)',
-    },
-  };
-
-  // Media query styles using CSS-in-JS with @media
-  const mediaStyles = `
-    @keyframes loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    
-    @media (max-width: 768px) {
-      .desktop-nav {
-        display: none !important;
-      }
-      
-      .mobile-menu-btn {
-        display: flex !important;
-      }
-      
-      .logo-text-container {
-        max-width: 150px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .logo-text-container {
-        max-width: 120px;
-      }
-      
-      .logo-icon {
-        width: 45px !important;
-        height: 45px !important;
-      }
-      
-      .logo {
-        gap: 10px !important;
-      }
-    }
-    
-    @media (max-width: 360px) {
-      .logo-text-container {
-        max-width: 100px;
-      }
-      
-      .logo-subtext {
-        margin-left: 15px !important;
-      }
-    }
-  `;
-
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
   const isLinkActive = (link) => {
-    if (link.type === 'page' && link.href === '#web-design') {
-      return currentView === 'web-design';
-    }
-    return activeLink === link.href.substring(1);
+    if (link.type === "page") return currentView === "web-design";
+    return activeLink === link.href.replace("#", "");
   };
-
-  // Close mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (isMobileMenuOpen && !e.target.closest('.navbar-content')) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-    
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [isMobileMenuOpen]);
 
   return (
     <>
-<<<<<<< HEAD
-      <nav className={`navbar ${isScrolled ? 'scrolled' : ''} ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+      <nav className={`navbar ${isScrolled ? "scrolled" : ""}`}>
         <div className="navbar-container">
-          <button 
-            className="navbar-logo"
-=======
-      <style>{mediaStyles}</style>
-      <nav style={styles.navbar} className="navbar-content">
-        <div style={styles.container}>
+          {/* Logo */}
           <div
-            style={styles.logo}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.02)';
-              const logoIcon = e.currentTarget.querySelector('.logo-icon');
-              if (logoIcon) {
-                logoIcon.style.transform = 'rotate(3deg) scale(1.05)';
-                logoIcon.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.12)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              const logoIcon = e.currentTarget.querySelector('.logo-icon');
-              if (logoIcon) {
-                logoIcon.style.transform = 'rotate(0deg) scale(1)';
-                logoIcon.style.boxShadow = styles.logoIcon.boxShadow;
-              }
-            }}
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
-            onClick={handleLogoClick}
-            aria-label="Go to Home"
+            className="navbar-logo"
+            onClick={() => handleNavClick("#home", "home")}
           >
-            <div className="logo-icon">
-              <div className="logo-image-container">
-                {!logoLoaded && <div className="logo-loading"></div>}
-                <img
-                  src={logoUrl}
-                  alt="TANA DIGITAL Logo"
-                  className="logo-image"
-                  style={{ opacity: logoLoaded ? 1 : 0 }}
-                  onLoad={() => setLogoLoaded(true)}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    setLogoLoaded(true);
-                  }}
-                  loading="lazy"
-                />
-                <div className="logo-fallback" style={{ display: logoLoaded ? 'none' : 'flex' }}>
-                  TDA
-                </div>
-              </div>
-            </div>
-<<<<<<< HEAD
-            <div className="logo-text-container">
-              <span className="logo-text">Tana Digital</span>
-              <span className="logo-subtext">Agency</span>
-=======
-            <div style={styles.logoTextContainer} className="logo-text-container">
-              <span style={styles.logoText}>Tana Digital</span>
-              <span style={styles.logoSubtext} className="logo-subtext">Agency</span>
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
-            </div>
-          </button>
+            <img
+              src={logoUrl}
+              alt="Tana Digital Logo"
+              onLoad={() => setLogoLoaded(true)}
+              style={{ opacity: logoLoaded ? 1 : 0 }}
+            />
+            {!logoLoaded && <div className="logo-placeholder">TDA</div>}
+            <span>Tana Digital Agency</span>
+          </div>
 
-<<<<<<< HEAD
+          {/* Desktop Links */}
           <div className="navbar-links">
             {navLinks.map((link) => (
               <button
-=======
-          {/* Desktop Navigation */}
-          <div style={styles.desktopNav} className="desktop-nav">
-            {navLinks.slice(0, isMobile ? 4 : navLinks.length).map((link) => (
-              <a
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
                 key={link.name}
-                className={`navbar-link ${isLinkActive(link) ? 'active' : ''}`}
+                className={`navbar-link ${
+                  isLinkActive(link) ? "active" : ""
+                }`}
                 onClick={() => handleNavClick(link.href, link.type)}
               >
                 {link.name}
-                <span className="navbar-link-underline"></span>
               </button>
             ))}
-            <button 
-              className="navbar-cta"
-              onClick={handleWhatsappClick}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-              </svg>
+
+            <button className="navbar-cta" onClick={handleWhatsappClick}>
               Chat
             </button>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Toggle */}
           <button
-<<<<<<< HEAD
-            ref={hamburgerBtnRef}
-            className={`hamburger-btn ${isMobileMenuOpen ? 'active' : ''}`}
-=======
-            style={styles.mobileMenuBtn}
-            className="mobile-menu-btn"
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
+            className="hamburger-btn"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isMobileMenuOpen}
           >
-            <span></span>
-            <span></span>
-            <span></span>
+            ☰
           </button>
         </div>
 
-<<<<<<< HEAD
-        <div 
-          ref={mobileMenuRef}
-          className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}
-        >
-          <div className="mobile-menu-header">
-            <div className="mobile-logo">
-              <div className="mobile-logo-icon">
-                <img
-                  src={logoUrl}
-                  alt="TANA DIGITAL Logo"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
-                />
-                <div className="mobile-logo-fallback">TDA</div>
-              </div>
-              <div className="mobile-logo-text">
-                <span>Tana Digital</span>
-                <small>Agency</small>
-              </div>
-            </div>
-            <button 
-              className="mobile-menu-close"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="mobile-links">
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="mobile-menu">
             {navLinks.map((link) => (
               <button
                 key={link.name}
-                className={`mobile-link ${isLinkActive(link) ? 'active' : ''}`}
+                className={`mobile-link ${
+                  isLinkActive(link) ? "active" : ""
+                }`}
                 onClick={() => handleNavClick(link.href, link.type)}
               >
-                <span className="mobile-link-icon">{link.icon}</span>
-                <span className="mobile-link-text">{link.name}</span>
-                {isLinkActive(link) && <span className="mobile-link-active"></span>}
+                {link.name}
               </button>
             ))}
-          </div>
-
-          <div className="mobile-menu-footer">
-            <button 
-              className="mobile-cta"
-              onClick={handleWhatsappClick}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-              </svg>
-              <span>Chat on WhatsApp</span>
+            <button className="mobile-cta" onClick={handleWhatsappClick}>
+              Chat on WhatsApp
             </button>
-            
-            <div className="mobile-contact-info">
-              <p>Ready to transform your digital presence?</p>
-              <a href="tel:+254758284534" className="mobile-phone">
-                📞 +254 758 284 534
-              </a>
-            </div>
           </div>
-        </div>
-      </nav>
-
-      {isMobileMenuOpen && (
-        <div 
-          className="menu-overlay" 
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-=======
-        {/* Mobile Menu Overlay */}
-        {isMobileMenuOpen && (
-          <div 
-            style={styles.mobileMenuOverlay}
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
         )}
-
-        {/* Mobile Menu */}
-        <div style={styles.mobileMenu}>
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              style={{
-                ...styles.mobileLink,
-                ...(isLinkActive(link) ? { 
-                  color: '#000000', 
-                  background: 'rgba(0, 0, 0, 0.05)',
-                  fontWeight: 700 
-                } : {}),
-              }}
-              onMouseEnter={(e) => {
-                if (!isLinkActive(link)) {
-                  e.currentTarget.style.background = 'rgba(0, 0, 0, 0.03)';
-                  e.currentTarget.style.color = '#000000';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isLinkActive(link)) {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = styles.mobileLink.color;
-                }
-              }}
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavClick(link.href, link.type);
-                setIsMobileMenuOpen(false);
-              }}
-            >
-              {link.type === 'home' && (
-                <svg style={styles.mobileLinkIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                  <polyline points="9 22 9 12 15 12 15 22" />
-                </svg>
-              )}
-              {link.type === 'page' && (
-                <svg style={styles.mobileLinkIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                  <line x1="9" y1="3" x2="9" y2="21" />
-                </svg>
-              )}
-              {link.type === 'section' && (
-                <svg style={styles.mobileLinkIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                </svg>
-              )}
-              {link.name}
-            </a>
-          ))}
-          <button 
-            style={styles.mobileCta}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#333333';
-              e.currentTarget.style.transform = 'scale(1.02)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#000000';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-            onClick={() => {
-              handleWhatsappClick();
-              setIsMobileMenuOpen(false);
-            }}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-            </svg>
-            Get Started Free
-          </button>
-        </div>
       </nav>
-      
-      {/* Add spacing for fixed navbar */}
-      <div style={{ height: '80px' }} />
->>>>>>> 127f78f2798687738d7b6252964a67d8586ab7ca
+
+      {/* Spacer for fixed navbar */}
+      <div style={{ height: "80px" }} />
     </>
   );
 };
