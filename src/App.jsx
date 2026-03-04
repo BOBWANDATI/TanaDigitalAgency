@@ -14,13 +14,23 @@ import './App.css';
 function App() {
   const [currentView, setCurrentView] = useState('home');
   const [scrollToSection, setScrollToSection] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
-    // Check URL on load
+    setTimeout(() => setIsLoading(false), 500);
+    
     const hash = window.location.hash.substring(1);
     if (hash === 'web-design') {
       setCurrentView('web-design');
     }
+
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleNavigate = (view, section = null) => {
@@ -33,18 +43,10 @@ function App() {
     } else {
       window.location.hash = '';
     }
-    
-    // Close mobile menu if open
-    if (window.innerWidth <= 768) {
-      const mobileMenuBtn = document.querySelector('[aria-label="Toggle menu"]');
-      if (mobileMenuBtn) mobileMenuBtn.click();
-    }
-    
     window.scrollTo(0, 0);
   };
 
   useEffect(() => {
-    // Handle scroll to section after navigation
     if (scrollToSection && currentView === 'home') {
       setTimeout(() => {
         const element = document.getElementById(scrollToSection);
@@ -56,14 +58,21 @@ function App() {
     }
   }, [currentView, scrollToSection]);
 
+  if (isLoading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-spinner"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="App">
-      <Navbar onNavigate={handleNavigate} />
-      
+      <Navbar onNavigate={handleNavigate} currentView={currentView} />
       <main className="main-content">
         {currentView === 'home' ? (
           <>
-            <Hero />
+            <Hero scrollY={scrollY} />
             <Services />
             <About />
             <Portfolio />
@@ -75,7 +84,6 @@ function App() {
           <WebDesign />
         )}
       </main>
-      
       <Footer />
     </div>
   );

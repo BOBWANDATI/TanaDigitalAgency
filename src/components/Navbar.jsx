@@ -1,78 +1,133 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import './Navbar.css';
 
-const Navbar = ({ onNavigate }) => {
+const Navbar = ({ onNavigate, currentView }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeLink, setActiveLink] = useState('home');
   const [logoLoaded, setLogoLoaded] = useState(false);
-  const [currentView, setCurrentView] = useState('home');
+  const mobileMenuRef = useRef(null);
+  const hamburgerBtnRef = useRef(null);
 
   const navLinks = [
-    { name: 'Home', href: '#home', type: 'home' },
-    { name: 'Services', href: '#services', type: 'section' },
-    { name: 'Courses', href: '#courses', type: 'section' },
-    { name: 'Portfolio', href: '#portfolio', type: 'section' },
-    { name: 'About Us', href: '#about', type: 'section' },
-    { name: 'Web Design', href: '#web-design', type: 'page' },
-    { name: 'Contact', href: '#contact', type: 'section' },
+    { name: 'Home', href: '#home', type: 'home', icon: '🏠' },
+    { name: 'Services', href: '#services', type: 'section', icon: '⚙️' },
+    { name: 'Courses', href: '#courses', type: 'section', icon: '📚' },
+    { name: 'Portfolio', href: '#portfolio', type: 'section', icon: '💼' },
+    { name: 'About Us', href: '#about', type: 'section', icon: '👥' },
+    { name: 'I want a Website', href: '#web-design', type: 'page', icon: '🎨' },
+    { name: 'Contact', href: '#contact', type: 'section', icon: '📞' },
   ];
 
-  const logoUrl = "https://github.com/BOBWANDATI/images/blob/main/Black%20and%20White%20Initial%20A%20Tech%20Business%20Logo%20.png?raw=true";
+  const logoUrl = "https://github.com/BOBWANDATI/images/blob/main/ChatGPT%20Image%20Feb%2026,%202026,%2009_46_00%20AM.png?raw=true";
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
+      
+      if (currentView === 'home') {
+        const sections = navLinks
+          .filter(link => link.type === 'section')
+          .map(link => ({
+            id: link.href.substring(1),
+            element: document.getElementById(link.href.substring(1))
+          }))
+          .filter(section => section.element);
+        
+        let current = 'home';
+        const scrollPosition = window.scrollY + 100;
+        
+        sections.forEach(section => {
+          if (section.element) {
+            const { top, bottom } = section.element.getBoundingClientRect();
+            const elementTop = top + window.scrollY;
+            const elementBottom = bottom + window.scrollY;
+            
+            if (scrollPosition >= elementTop && scrollPosition < elementBottom) {
+              current = section.id;
+            }
+          }
+        });
+        
+        setActiveLink(current);
+      }
     };
-    
-    // Check current view based on URL
+
     const hash = window.location.hash.substring(1);
     if (hash === 'web-design') {
-      setCurrentView('web-design');
+      setActiveLink('web-design');
+    }
+
+    const handleClickOutside = (event) => {
+      if (
+        mobileMenuRef.current && 
+        !mobileMenuRef.current.contains(event.target) &&
+        hamburgerBtnRef.current &&
+        !hamburgerBtnRef.current.contains(event.target)
+      ) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [currentView, navLinks]);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
     } else {
-      setCurrentView('home');
+      document.body.style.overflow = '';
     }
     
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
 
   const handleNavClick = (href, type = 'section') => {
     setIsMobileMenuOpen(false);
+    const sectionId = href.substring(1);
     
     if (type === 'page' && href === '#web-design') {
-      // Navigate to Web Design page
+      setActiveLink('web-design');
       if (onNavigate) {
         onNavigate('web-design');
-      } else {
-        window.location.hash = 'web-design';
-        window.scrollTo(0, 0);
       }
-      setCurrentView('web-design');
     } else if (type === 'home') {
-      // Navigate to home page
+      setActiveLink('home');
       if (onNavigate) {
         onNavigate('home');
       } else {
         window.location.hash = '';
-        window.scrollTo(0, 0);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-      setCurrentView('home');
     } else if (type === 'section') {
-      // Scroll to section on home page
+      setActiveLink(sectionId);
+      
       if (currentView === 'web-design') {
-        // If we're on web design page, go to home page first
         if (onNavigate) {
-          onNavigate('home', href.substring(1));
-        } else {
-          window.location.hash = href;
+          onNavigate('home', sectionId);
         }
       } else {
-        // We're already on home page, just scroll
-        const element = document.querySelector(href);
+        const element = document.getElementById(sectionId);
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }
-      setCurrentView('home');
     }
   };
 
@@ -83,453 +138,158 @@ const Navbar = ({ onNavigate }) => {
 
   const handleWhatsappClick = () => {
     const message = "Hello Tana Digital Agency! I'm interested in your services.";
-    const whatsappUrl = `https://wa.me/254712345678?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/254758284534?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
+    setIsMobileMenuOpen(false);
   };
 
-  const styles = {
-    navbar: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 1000,
-      transition: 'all 0.3s ease',
-      padding: '0 5%',
-      background: 'rgba(255, 255, 255, 0.98)',
-      backdropFilter: 'blur(10px)',
-      borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
-      ...(isScrolled && {
-        background: 'rgba(255, 255, 255, 0.98)',
-        backdropFilter: 'blur(15px)',
-        boxShadow: '0 5px 25px rgba(0, 0, 0, 0.08)',
-      }),
-    },
-    container: {
-      maxWidth: '1200px',
-      margin: '0 auto',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      height: '80px',
-    },
-    logo: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '15px',
-      textDecoration: 'none',
-      color: 'inherit',
-      padding: '8px 0',
-      transition: 'transform 0.3s ease',
-      cursor: 'pointer',
-    },
-    logoIcon: {
-      width: '55px',
-      height: '55px',
-      background: '#ffffff',
-      borderRadius: '12px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-      transition: 'all 0.3s ease',
-      border: '1px solid rgba(0, 0, 0, 0.08)',
-      position: 'relative',
-    },
-    logoImageContainer: {
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '8px',
-      background: '#f1f1f1ff',
-    },
-    logoImage: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'contain',
-      filter: 'contrast(1.1) brightness(1.05)',
-      transition: 'all 0.3s ease',
-    },
-    logoLoading: {
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-      backgroundSize: '200% 100%',
-      animation: 'loading 1.5s infinite',
-      borderRadius: '10px',
-    },
-    logoFallback: {
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #000000, #1a1a1a)',
-      color: '#ffffff',
-      fontWeight: 'bold',
-      fontSize: '1.4rem',
-      borderRadius: '10px',
-      fontFamily: "'Segoe UI', Arial, sans-serif",
-      letterSpacing: '1px',
-    },
-    logoTextContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      lineHeight: 1.1,
-    },
-    logoText: {
-      fontWeight: 800,
-      fontSize: '1.5rem',
-      color: '#5207b4ff',
-      letterSpacing: '-0.5px',
-      background: 'linear-gradient(135deg, #000000, #333333)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      backgroundClip: 'text',
-      fontFamily: "cyrillic bodoni condesed",
-    },
-    logoSubtext: {
-      color: '#0e12f1ff',
-      fontWeight: 500,
-      fontSize: '0.88rem',
-      display: 'block',
-      marginTop: '3px',
-      marginLeft: '23px',
-      letterSpacing: '1.5px',
-      textTransform: 'uppercase',
-      fontFamily: "slopes",
-    },
-    links: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '2.5rem',
-      '@media (max-width: 768px)': {
-        display: 'none',
-      },
-    },
-    link: {
-      color: '#0b25b6ff',
-      textDecoration: 'none',
-      fontWeight: 600,
-      fontSize: '0.95rem',
-      transition: 'all 0.3s ease',
-      position: 'relative',
-      padding: '8px 0',
-      fontFamily: "cyrillic bodoni condesed",
-      cursor: 'pointer',
-    },
-    linkActive: {
-      color: '#e9d208ff',
-    },
-    linkUnderline: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      width: '0%',
-      height: '2px',
-      background: 'linear-gradient(90deg, #000000, #333333)',
-      transition: 'width 0.3s ease',
-    },
-    cta: {
-      background: '#f5ca0bff',
-      color: 'white',
-      padding: '12px 28px',
-      borderRadius: '8px',
-      fontWeight: 600,
-      fontSize: '0.95rem',
-      border: 'none',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      letterSpacing: '0.5px',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-    },
-    mobileMenuBtn: {
-      display: 'none',
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      padding: '10px',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '5px',
-      '@media (max-width: 768px)': {
-        display: 'flex',
-      },
-    },
-    mobileMenuBtnSpan: {
-      display: 'block',
-      width: '26px',
-      height: '2.5px',
-      background: '#000000',
-      borderRadius: '2px',
-      transition: 'all 0.3s ease',
-    },
-    mobileMenu: {
-      display: 'none',
-      flexDirection: 'column',
-      gap: '0',
-      background: 'white',
-      position: 'absolute',
-      top: '80px',
-      left: '5%',
-      right: '5%',
-      borderRadius: '12px',
-      boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)',
-      overflow: 'hidden',
-      border: '1px solid rgba(0, 0, 0, 0.05)',
-      '@media (max-width: 768px)': {
-        ...(isMobileMenuOpen && {
-          display: 'flex',
-        }),
-      },
-    },
-    mobileLink: {
-      color: '#475569',
-      textDecoration: 'none',
-      fontWeight: 600,
-      fontSize: '1rem',
-      padding: '18px 24px',
-      transition: 'all 0.3s ease',
-      borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      cursor: 'pointer',
-    },
-    mobileLinkHover: {
-      background: 'rgba(0, 0, 0, 0.03)',
-      color: '#000000',
-      paddingLeft: '30px',
-    },
-    mobileCta: {
-      background: '#000000',
-      color: 'white',
-      padding: '18px 24px',
-      fontWeight: 600,
-      fontSize: '1rem',
-      border: 'none',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      textAlign: 'center',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-    },
-  };
-
-  // Add CSS animation for loading
-  const loadingStyle = `
-    @keyframes loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-  `;
-
-  // Check if link is active
   const isLinkActive = (link) => {
     if (link.type === 'page' && link.href === '#web-design') {
       return currentView === 'web-design';
     }
-    return false;
+    return activeLink === link.href.substring(1);
   };
 
   return (
     <>
-      <style>{loadingStyle}</style>
-      <nav style={styles.navbar}>
-        <div style={styles.container}>
-          <div
-            style={styles.logo}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.02)';
-              const logoIcon = e.currentTarget.querySelector('.logo-icon');
-              if (logoIcon) {
-                logoIcon.style.transform = 'rotate(3deg) scale(1.05)';
-                logoIcon.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.12)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              const logoIcon = e.currentTarget.querySelector('.logo-icon');
-              if (logoIcon) {
-                logoIcon.style.transform = 'rotate(0deg) scale(1)';
-                logoIcon.style.boxShadow = styles.logoIcon.boxShadow;
-              }
-            }}
+      <nav className={`navbar ${isScrolled ? 'scrolled' : ''} ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        <div className="navbar-container">
+          <button 
+            className="navbar-logo"
             onClick={handleLogoClick}
+            aria-label="Go to Home"
           >
-            <div className="logo-icon" style={styles.logoIcon}>
-              {!logoLoaded ? (
-                <div style={styles.logoLoading}></div>
-              ) : null}
-              
-              <div style={styles.logoImageContainer}>
+            <div className="logo-icon">
+              <div className="logo-image-container">
+                {!logoLoaded && <div className="logo-loading"></div>}
                 <img
                   src={logoUrl}
                   alt="TANA DIGITAL Logo"
-                  style={{
-                    ...styles.logoImage,
-                    opacity: logoLoaded ? 1 : 0,
-                  }}
-                  onLoad={() => {
-                    setLogoLoaded(true);
-                  }}
+                  className="logo-image"
+                  style={{ opacity: logoLoaded ? 1 : 0 }}
+                  onLoad={() => setLogoLoaded(true)}
                   onError={(e) => {
-                    console.error('Failed to load logo image');
                     e.target.style.display = 'none';
                     setLogoLoaded(true);
                   }}
-                  loading="eager"
-                  decoding="async"
+                  loading="lazy"
                 />
-                
-                {logoLoaded && !document.querySelector('img[src*="github.com"]')?.complete && (
-                  <div style={styles.logoFallback}>
-                    <span>TD</span>
-                  </div>
-                )}
+                <div className="logo-fallback" style={{ display: logoLoaded ? 'none' : 'flex' }}>
+                  TDA
+                </div>
               </div>
             </div>
-            <div style={styles.logoTextContainer}>
-              <span style={styles.logoText}>Tana Digital</span>
-              <span style={styles.logoSubtext}>Agency</span>
+            <div className="logo-text-container">
+              <span className="logo-text">Tana Digital</span>
+              <span className="logo-subtext">Agency</span>
             </div>
-          </div>
+          </button>
 
-          <div style={styles.links}>
+          <div className="navbar-links">
             {navLinks.map((link) => (
-              <a
+              <button
                 key={link.name}
-                href={link.href}
-                style={{
-                  ...styles.link,
-                  ...(isLinkActive(link) ? styles.linkActive : {}),
-                }}
-                onMouseEnter={(e) => {
-                  if (!isLinkActive(link)) {
-                    e.currentTarget.style.color = '#f1e20bff';
-                  }
-                  e.currentTarget.querySelector('.underline').style.width = '100%';
-                }}
-                onMouseLeave={(e) => {
-                  if (!isLinkActive(link)) {
-                    e.currentTarget.style.color = styles.link.color;
-                  }
-                  e.currentTarget.querySelector('.underline').style.width = isLinkActive(link) ? '100%' : '0%';
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick(link.href, link.type);
-                }}
-                className="nav-link"
+                className={`navbar-link ${isLinkActive(link) ? 'active' : ''}`}
+                onClick={() => handleNavClick(link.href, link.type)}
               >
                 {link.name}
-                <span 
-                  className="underline" 
-                  style={{
-                    ...styles.linkUnderline,
-                    width: isLinkActive(link) ? '100%' : '0%',
-                  }}
-                ></span>
-              </a>
+                <span className="navbar-link-underline"></span>
+              </button>
             ))}
             <button 
-              style={styles.cta}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
-                e.currentTarget.style.background = '#333333';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'none';
-                e.currentTarget.style.boxShadow = styles.cta.boxShadow;
-                e.currentTarget.style.background = styles.cta.background;
-              }}
+              className="navbar-cta"
               onClick={handleWhatsappClick}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 12h14M12 5l7 7-7 7" />
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
               </svg>
-              Get Started
+              Chat
             </button>
           </div>
 
           <button
-            style={styles.mobileMenuBtn}
+            ref={hamburgerBtnRef}
+            className={`hamburger-btn ${isMobileMenuOpen ? 'active' : ''}`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle menu"
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileMenuOpen}
           >
-            <span style={{
-              ...styles.mobileMenuBtnSpan,
-              transform: isMobileMenuOpen ? 'rotate(45deg) translate(6px, 6px)' : 'none',
-            }}></span>
-            <span style={{
-              ...styles.mobileMenuBtnSpan,
-              opacity: isMobileMenuOpen ? 0 : 1,
-            }}></span>
-            <span style={{
-              ...styles.mobileMenuBtnSpan,
-              transform: isMobileMenuOpen ? 'rotate(-45deg) translate(6px, -6px)' : 'none',
-            }}></span>
+            <span></span>
+            <span></span>
+            <span></span>
           </button>
         </div>
 
-        {isMobileMenuOpen && (
-          <div style={styles.mobileMenu}>
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                style={{
-                  ...styles.mobileLink,
-                  ...(isLinkActive(link) ? { color: '#000000', background: 'rgba(0, 0, 0, 0.05)' } : {}),
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = styles.mobileLinkHover.background;
-                  e.currentTarget.style.color = styles.mobileLinkHover.color;
-                  e.currentTarget.style.paddingLeft = styles.mobileLinkHover.paddingLeft;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = isLinkActive(link) ? 'rgba(0, 0, 0, 0.05)' : 'transparent';
-                  e.currentTarget.style.color = isLinkActive(link) ? '#000000' : styles.mobileLink.color;
-                  e.currentTarget.style.paddingLeft = styles.mobileLink.padding;
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick(link.href, link.type);
-                  setIsMobileMenuOpen(false);
-                }}
-              >
-                {link.name}
-              </a>
-            ))}
+        <div 
+          ref={mobileMenuRef}
+          className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}
+        >
+          <div className="mobile-menu-header">
+            <div className="mobile-logo">
+              <div className="mobile-logo-icon">
+                <img
+                  src={logoUrl}
+                  alt="TANA DIGITAL Logo"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+                <div className="mobile-logo-fallback">TDA</div>
+              </div>
+              <div className="mobile-logo-text">
+                <span>Tana Digital</span>
+                <small>Agency</small>
+              </div>
+            </div>
             <button 
-              style={styles.mobileCta}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#333333';
-                e.currentTarget.style.transform = 'scale(1.02)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#000000';
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-              onClick={() => {
-                handleWhatsappClick();
-                setIsMobileMenuOpen(false);
-              }}
+              className="mobile-menu-close"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
-              Get Started Free
+              ×
             </button>
           </div>
-        )}
+
+          <div className="mobile-links">
+            {navLinks.map((link) => (
+              <button
+                key={link.name}
+                className={`mobile-link ${isLinkActive(link) ? 'active' : ''}`}
+                onClick={() => handleNavClick(link.href, link.type)}
+              >
+                <span className="mobile-link-icon">{link.icon}</span>
+                <span className="mobile-link-text">{link.name}</span>
+                {isLinkActive(link) && <span className="mobile-link-active"></span>}
+              </button>
+            ))}
+          </div>
+
+          <div className="mobile-menu-footer">
+            <button 
+              className="mobile-cta"
+              onClick={handleWhatsappClick}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+              <span>Chat on WhatsApp</span>
+            </button>
+            
+            <div className="mobile-contact-info">
+              <p>Ready to transform your digital presence?</p>
+              <a href="tel:+254758284534" className="mobile-phone">
+                📞 +254 758 284 534
+              </a>
+            </div>
+          </div>
+        </div>
       </nav>
+
+      {isMobileMenuOpen && (
+        <div 
+          className="menu-overlay" 
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
     </>
   );
 };
